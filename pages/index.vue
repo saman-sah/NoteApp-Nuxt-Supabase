@@ -1,35 +1,60 @@
 
 <script setup lang="ts">
     const authState= ref<"Login" | "Signup">("Login")
-    const { signUp, user, signIn }= useAuth();
+    const { signUp, user, signIn, signOut }= useAuth();
     const toggleAuthState= () => {
         if(authState.value === "Login") authState.value= "Signup"
         else authState.value = "Login"
+        authError.value= ""
     }
     const input= reactive({
         email:"",
         password: ""
     })
+
+    const authError=ref("")
     const { supabase }= useSupabase()
 
-    function handleSubmit() {
-        if(authState.value === "Login") {
-            signIn({
-                email: input.email,
-                password: input.password
-            })
-        }else {
-            signUp({
-                email: input.email,
-                password: input.password
-            })
+    async function handleSubmit() {
+        try {
+            if(authState.value === "Login") {
+                await signIn({
+                    email: input.email,
+                    password: input.password
+                })
+            }else {
+                await signUp({
+                    email: input.email,
+                    password: input.password
+                })
+            }
+            input.email= "";
+            input.password=""
+        } catch (error) {
+            authError.value= error?.message;
         }
+        
         
     }
 </script>
 <template>
     {{ user }}
-    <div class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+    <div v-if="user" class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <img class="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
+            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">You Are Logged In!</h2>
+        </div>
+
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <div>
+                <button @click="signOut"
+                    class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+    <div v-else class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
             <img class="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
             <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">{{ authState }} to your account</h2>
@@ -74,6 +99,9 @@
                      class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
                 </div>
     
+            <p v-if="authError" class="text-red-400 mt-10 text-center text-sm text-gray-500">
+                {{ authError }}
+            </p>
             <p class="mt-10 text-center text-sm text-gray-500">
                 {{ authState=== "Login" ? 'Not a member!' : 'You already have an account!' }}    
                 
