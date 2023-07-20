@@ -1,5 +1,6 @@
 const useAuth= ()=> {
     const user= useState("user",()=> null)
+    const router= useRouter()
     const { supabase }= useSupabase();
 
     supabase.auth.onAuthStateChange((e, session)=> {
@@ -10,9 +11,14 @@ const useAuth= ()=> {
         const { user: u , error } = await supabase.auth.signUp(
             {
                 email : email,
-                password  :password
-            }
+                password  :password,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/profile`,
+                }
+            },            
         )
+        if(error) throw error;
+        return u
     }
 
     const signIn =async({email, password }) => {
@@ -31,16 +37,20 @@ const useAuth= ()=> {
         if(error){
             throw new Error('sigout in not compeleted')
         }
+        router.push("/")
     }
     
     
-
+    const isLoggedIn= ()=> {
+        return !!user.value
+    }
 
     return {
         user,
         signUp,
         signIn,
-        signOut
+        signOut,
+        isLoggedIn
     }
 
 }
