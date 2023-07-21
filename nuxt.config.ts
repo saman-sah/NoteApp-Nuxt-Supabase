@@ -4,6 +4,12 @@ export default defineNuxtConfig({
   css: [
     '@/assets/css/tailwind.css',
   ],
+  runtimeConfig : {
+    public: {
+      SUPABASE_KEY: process.env.SUPABASE_KEY,
+      SUPABASE_URL: process.env.SUPABASE_URL
+    }    
+  },
   postcss: {
     plugins: {
       tailwindcss: {},
